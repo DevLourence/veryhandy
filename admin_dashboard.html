@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Management | Very Handy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-slate-50 min-h-screen">
+
+    <nav class="bg-blue-700 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <span class="text-xl font-black tracking-tighter uppercase">Very Handy Admin</span>
+            <div class="flex gap-4 ml-8 text-sm font-bold">
+                <button onclick="switchTab('clients')" class="hover:text-blue-200 uppercase">Clients</button>
+                <button onclick="switchTab('bookings')" class="hover:text-blue-200 uppercase">Bookings</button>
+                <button onclick="switchTab('reviews')" class="hover:text-blue-200 uppercase">Reviews</button>
+                <button onclick="switchTab('branches')" class="hover:text-blue-200 uppercase">Branches</button>
+                <button onclick="switchTab('services')" class="hover:text-blue-200 uppercase">Services</button>
+            </div>
+        </div>
+        <button id="logout-btn" onclick="handleLogout()"
+            class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg font-bold text-xs transition">LOGOUT</button>
+    </nav>
+
+    <main class="p-6 max-w-6xl mx-auto">
+        <section id="clients-section">
+            <h2 class="text-2xl font-black mb-6 text-slate-800 uppercase tracking-tight">Client Profiles</h2>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-100 text-[10px] font-black uppercase text-slate-500">
+                        <tr>
+                            <th class="p-4">Full Name</th>
+                            <th class="p-4">Address</th>
+                            <th class="p-4">Mobile</th>
+                            <th class="p-4">Age</th>
+                            <th class="p-4">Role</th>
+                            <th class="p-4">User ID</th>
+                            <th class="p-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="client-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="bookings-section" class="hidden">
+            <h2 class="text-2xl font-black mb-6 text-slate-800 uppercase tracking-tight">Manage Bookings</h2>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-100 text-[10px] font-black uppercase text-slate-500">
+                        <tr>
+                            <th class="p-4">Client</th>
+                            <th class="p-4">Service</th>
+                            <th class="p-4">Address</th>
+                            <th class="p-4">Date & Time</th>
+                            <th class="p-4">Photo</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="booking-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="reviews-section" class="hidden">
+            <h2 class="text-2xl font-black mb-6 text-slate-800 uppercase tracking-tight">Client Reviews</h2>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-100 text-[10px] font-black uppercase text-slate-500">
+                        <tr>
+                            <th class="p-4">Client</th>
+                            <th class="p-4">Rating</th>
+                            <th class="p-4">Comment</th>
+                            <th class="p-4">Photos</th>
+                            <th class="p-4">Public</th>
+                            <th class="p-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="review-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="branches-section" class="hidden">
+            <h2 class="text-2xl font-black mb-6 text-slate-800 uppercase tracking-tight">Manage Branches</h2>
+
+            <!-- Add Branch Form -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+                <h3 class="font-bold text-slate-700 mb-4 uppercase text-sm">Add New Branch</h3>
+                <div class="flex gap-4">
+                    <input id="branch-name" type="text" placeholder="Branch Name (e.g., Downtown)"
+                        class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input id="branch-address" type="text" placeholder="Full Address"
+                        class="flex-2 p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+                    <button onclick="addBranch()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-lg transition">Add
+                        Store</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-100 text-[10px] font-black uppercase text-slate-500">
+                        <tr>
+                            <th class="p-4">Store Name</th>
+                            <th class="p-4">Address</th>
+                            <th class="p-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="branch-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="services-section" class="hidden">
+            <h2 class="text-2xl font-black mb-6 text-slate-800 uppercase tracking-tight">Manage Services</h2>
+
+            <!-- Add Service Form -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+                <h3 class="font-bold text-slate-700 mb-4 uppercase text-sm">Add New Service</h3>
+                <div class="space-y-4">
+                    <input id="service-name-input" type="text" placeholder="Service Name (e.g., Electrical)"
+                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+                    <textarea id="service-desc-input" placeholder="Brief service description..." rows="2"
+                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <button onclick="addService()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-lg transition">Add
+                        Service</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-100 text-[10px] font-black uppercase text-slate-500">
+                        <tr>
+                            <th class="p-4">Service Name</th>
+                            <th class="p-4">Description</th>
+                            <th class="p-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="service-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://kbiiitwgdiwxwazruwny.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiaWlpdHdnZGl3eHdhenJ1d255Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwOTQ5OTQsImV4cCI6MjA4MzY3MDk5NH0.vbADZlmwDn80RCghnmo2IE1O1R1gEcnnRha7j1V6VUo';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function checkSession() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const { data: profile, error } = await _supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .maybeSingle();
+
+            console.log("Admin Check Profile:", profile);
+            if (error) {
+                console.error("Admin check database error:", error);
+                // If there's a DB error, we don't necessarily want to boot them out immediately 
+                // unless we are sure they aren't authorized.
+            }
+
+            const role = profile ? String(profile.role).toLowerCase().trim() : '';
+            console.log("Calculated Role:", role);
+
+            if (role !== 'admin') {
+                console.warn("Unauthorized access attempt. Role:", role || 'No Role Found');
+                alert("Access Denied: Admins Only");
+                window.location.href = 'client_dashboard.html';
+            }
+        }
+
+        checkSession();
+
+        function switchTab(tab) {
+            document.getElementById('clients-section').classList.toggle('hidden', tab !== 'clients');
+            document.getElementById('bookings-section').classList.toggle('hidden', tab !== 'bookings');
+            document.getElementById('reviews-section').classList.toggle('hidden', tab !== 'reviews');
+            document.getElementById('branches-section').classList.toggle('hidden', tab !== 'branches');
+            document.getElementById('services-section').classList.toggle('hidden', tab !== 'services');
+
+            if (tab === 'clients') fetchClients();
+            else if (tab === 'bookings') fetchBookings();
+            else if (tab === 'reviews') fetchReviews();
+            else if (tab === 'branches') fetchBranches();
+            else if (tab === 'services') fetchServices();
+        }
+
+        async function fetchClients() {
+            const { data } = await _supabase.from('profiles').select('*');
+            const tbody = document.getElementById('client-table-body');
+            tbody.innerHTML = data.map(u => `
+                <tr>
+                    <td class="p-4 font-bold text-slate-700">${u.full_name || 'No Name'}</td>
+                    <td class="p-4 text-slate-600">${u.address || '-'}</td>
+                    <td class="p-4 text-slate-600">${u.mobile || '-'}</td>
+                    <td class="p-4 text-slate-600">${u.age || '-'}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-black ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'} uppercase">${u.role}</span></td>
+                    <td class="p-4 text-xs font-mono text-slate-400">${u.id.substring(0, 8)}...</td>
+                    <td class="p-4"><button class="text-blue-600 font-bold text-xs hover:underline">Edit</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchBookings() {
+            const tbody = document.getElementById('booking-table-body');
+            // Join bookings with profiles to get client name
+            const { data, error } = await _supabase
+                .from('bookings')
+                .select(`
+                    *,
+                    profiles:client_id (full_name)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Fetch bookings error:', error);
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">Error loading bookings: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 italic">No bookings found in database.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map(b => `
+                <tr>
+                    <td class="p-4 font-bold text-slate-700">${b.profiles ? b.profiles.full_name : 'Unknown'}</td>
+                    <td class="p-4 text-slate-600">${b.service_type}</td>
+                    <td class="p-4 text-slate-500 text-xs">
+                        <div class="font-bold text-blue-600 uppercase text-[9px] mb-1">${b.branch_name || 'No Branch'}</div>
+                        ${b.address || '-'}
+                    </td>
+                    <td class="p-4 text-slate-500">${b.booking_date ? new Date(b.booking_date).toLocaleString() : '-'}</td>
+                    <td class="p-4">
+                        <div class="flex flex-wrap gap-1">
+                            ${b.photo_url ? (function () {
+                    try {
+                        const urls = Array.isArray(JSON.parse(b.photo_url)) ? JSON.parse(b.photo_url) : [b.photo_url];
+                        return urls.map(url => `
+                                        <img src="${url}" class="w-8 h-8 object-cover rounded shadow-sm cursor-pointer hover:scale-110 transition" onclick="openLightbox('${url}')" />
+                                    `).join('');
+                    } catch (e) {
+                        return `<img src="${b.photo_url}" class="w-8 h-8 object-cover rounded shadow-sm cursor-pointer hover:scale-110 transition" onclick="openLightbox('${b.photo_url}')" />`;
+                    }
+                })() : '<span class="text-slate-300">-</span>'}
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-[10px] font-black uppercase ${b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                    b.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-orange-100 text-orange-700'
+                }">${b.status || 'pending'}</span>
+                    </td>
+                    <td class="p-4 flex gap-2">
+                        ${b.status === 'pending' ? `
+                            <button onclick="updateBookingStatus('${b.id}', 'confirmed')" class="text-green-600 font-bold text-xs hover:underline">Approve</button>
+                            <button onclick="updateBookingStatus('${b.id}', 'rejected')" class="text-red-600 font-bold text-xs hover:underline">Reject</button>
+                        ` : b.status === 'confirmed' ? `
+                            <button onclick="updateBookingStatus('${b.id}', 'completed')" class="text-blue-600 font-bold text-xs hover:underline">Mark Complete</button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateBookingStatus(id, newStatus) {
+            const { error } = await _supabase.from('bookings').update({ status: newStatus }).eq('id', id);
+            if (error) {
+                alert("Error updating status: " + error.message);
+                console.error(error);
+            } else {
+                fetchBookings();
+            }
+        }
+
+        function openLightbox(src) {
+            const modal = document.createElement('div');
+            modal.className = "fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-pointer";
+            modal.innerHTML = `<img src="${src}" class="max-w-full max-h-full rounded-lg shadow-2xl" />`;
+            modal.onclick = () => document.body.removeChild(modal);
+            document.body.appendChild(modal);
+        }
+
+        async function fetchReviews() {
+            const { data, error } = await _supabase
+                .from('reviews')
+                .select(`
+                    *,
+                    profiles:client_id (full_name)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Fetch reviews error:', error);
+                return;
+            }
+
+            const tbody = document.getElementById('review-table-body');
+            tbody.innerHTML = data.length ? data.map(r => `
+                <tr>
+                    <td class="p-4 font-bold text-slate-700">${r.profiles ? r.profiles.full_name : 'Unknown'}</td>
+                    <td class="p-4 text-orange-500 font-bold">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</td>
+                    <td class="p-4 text-slate-600 italic">"${r.comment || ''}"</td>
+                    <td class="p-4">
+                        <div class="flex flex-wrap gap-1">
+                            ${r.photo_urls ? (function () {
+                    try {
+                        const urls = JSON.parse(r.photo_urls);
+                        return urls.map(url => `
+                                            <img src="${url}" class="w-8 h-8 object-cover rounded shadow-sm cursor-pointer hover:scale-110 transition" onclick="openLightbox('${url}')" />
+                                        `).join('');
+                    } catch (e) {
+                        return `<img src="${r.photo_urls}" class="w-8 h-8 object-cover rounded shadow-sm cursor-pointer hover:scale-110 transition" onclick="openLightbox('${r.photo_urls}')" />`;
+                    }
+                })() : '<span class="text-slate-300">-</span>'}
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-[10px] font-black uppercase ${r.is_public ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
+                            ${r.is_public ? 'Public' : 'Hidden'}
+                        </span>
+                    </td>
+                    <td class="p-4">
+                        <button onclick="toggleReviewPublic('${r.id}', ${r.is_public})" class="text-blue-600 font-bold text-xs hover:underline">
+                            ${r.is_public ? 'Hide From Website' : 'Post Publicly'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">No reviews yet.</td></tr>';
+        }
+
+        async function toggleReviewPublic(id, currentStatus) {
+            const { error } = await _supabase
+                .from('reviews')
+                .update({ is_public: !currentStatus })
+                .eq('id', id);
+
+            if (error) {
+                alert("Error updating review: " + error.message);
+            } else {
+                fetchReviews();
+            }
+        }
+
+        async function fetchBranches() {
+            const { data, error } = await _supabase.from('branches').select('*').order('name');
+            if (error) { console.error(error); return; }
+            const tbody = document.getElementById('branch-table-body');
+            tbody.innerHTML = data.length ? data.map(b => `
+                <tr>
+                    <td class="p-4 font-bold text-slate-700">${b.name}</td>
+                    <td class="p-4 text-slate-600">${b.address}</td>
+                    <td class="p-4">
+                        <button onclick="deleteBranch('${b.id}')" class="text-red-500 font-bold text-xs hover:underline">Remove</button>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="3" class="p-8 text-center text-slate-400 italic">No branches added yet.</td></tr>';
+        }
+
+        async function addBranch() {
+            const name = document.getElementById('branch-name').value;
+            const address = document.getElementById('branch-address').value;
+            if (!name || !address) return alert("Please fill all fields");
+
+            const { error } = await _supabase.from('branches').insert([{ name, address }]);
+            if (error) alert(error.message);
+            else {
+                document.getElementById('branch-name').value = '';
+                document.getElementById('branch-address').value = '';
+                fetchBranches();
+            }
+        }
+
+        async function deleteBranch(id) {
+            if (!confirm("Are you sure?")) return;
+            const { error } = await _supabase.from('branches').delete().eq('id', id);
+            if (error) alert(error.message);
+            else fetchBranches();
+        }
+
+        async function fetchServices() {
+            const { data, error } = await _supabase.from('services').select('*').order('name');
+            if (error) { console.error(error); return; }
+            const tbody = document.getElementById('service-table-body');
+            tbody.innerHTML = data.length ? data.map(s => `
+                <tr>
+                    <td class="p-4 font-bold text-slate-700">${s.name}</td>
+                    <td class="p-4 text-slate-600 text-xs">${s.description || '-'}</td>
+                    <td class="p-4">
+                        <button onclick="deleteService('${s.id}')" class="text-red-500 font-bold text-xs hover:underline">Remove</button>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="3" class="p-8 text-center text-slate-400 italic">No services added yet.</td></tr>';
+        }
+
+        async function addService() {
+            const name = document.getElementById('service-name-input').value;
+            const description = document.getElementById('service-desc-input').value;
+            if (!name) return alert("Please enter a service name");
+
+            const { error } = await _supabase.from('services').insert([{ name, description }]);
+            if (error) alert(error.message);
+            else {
+                document.getElementById('service-name-input').value = '';
+                document.getElementById('service-desc-input').value = '';
+                fetchServices();
+            }
+        }
+
+        async function deleteService(id) {
+            if (!confirm("Are you sure?")) return;
+            const { error } = await _supabase.from('services').delete().eq('id', id);
+            if (error) alert(error.message);
+            else fetchServices();
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Initial Load
+        fetchClients();
+    </script>
+</body>
+
+</html>

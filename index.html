@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Very Handy Home Service Inc. | Reliable Handyman Services</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+        }
+
+        #hero {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('image/background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #000000;
+        }
+
+        .text-shadow {
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.7);
+        }
+
+        .max-logo {
+            height: 80px;
+            width: auto;
+            display: block;
+        }
+
+        #lightbox-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #lightbox-modal.active {
+            display: flex;
+        }
+
+        #view-login.active {
+            display: flex;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 overflow-x-hidden font-sans">
+
+    <div id="lightbox-modal" onclick="closeLightbox()">
+        <span
+            class="absolute top-5 right-10 text-white text-5xl font-bold cursor-pointer hover:text-blue-500 transition">&times;</span>
+        <img id="lightbox-img" src="" class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl border-4 border-white/10">
+    </div>
+
+    <nav class="glass fixed w-full z-50 border-b border-slate-200 px-6 py-2 flex justify-between items-center">
+        <div class="flex items-center space-x-4 cursor-pointer" onclick="showView('landing')">
+            <img src="image/logo/logo.svg" alt="Logo" class="max-logo">
+            <div class="hidden md:block text-2xl font-black text-blue-600 tracking-tighter uppercase">
+                Very Handy Home Service Inc.
+            </div>
+        </div>
+        <div class="flex space-x-4">
+            <button onclick="showView('login')"
+                class="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-blue-700 transition uppercase tracking-widest">Login</button>
+        </div>
+    </nav>
+
+    <section id="view-landing" class="view active">
+        <div id="hero" class="h-screen relative flex items-center justify-center text-center px-6">
+            <div class="max-w-4xl text-white z-10">
+                <h1 class="text-5xl md:text-8xl font-black leading-tight mb-6 text-shadow uppercase">
+                    Fix it with <br>
+                    <span class="text-blue-500">Very Handy</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-slate-100 mb-10 font-bold text-shadow tracking-wide">
+                    Your Trusted Local Handyman
+                </p>
+                <div class="flex justify-center gap-4">
+                    <button onclick="document.getElementById('expert-services').scrollIntoView({behavior:'smooth'})"
+                        class="bg-white text-blue-600 px-10 py-4 rounded-2xl font-black text-xl shadow-xl hover:bg-slate-100 transition">Our
+                        Services</button>
+                    <button onclick="showView('login')"
+                        class="bg-blue-600 hover:bg-blue-700 px-10 py-4 rounded-2xl font-black text-xl shadow-xl transition transform hover:scale-105">Book
+                        Now</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white py-24 px-6 text-center border-b border-slate-100">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-8 uppercase tracking-tighter">Reliable
+                    Handyman Services</h2>
+                <p class="text-lg md:text-xl text-slate-600 leading-relaxed mb-8 max-w-4xl mx-auto">
+                    At <span class="font-bold text-slate-800 uppercase">VeryHandy Home Services</span>, we offer a
+                    comprehensive range of professional handyman services to keep your home in top condition. From
+                    drywall repair and painting to light fixture installation and window coverings, our skilled team
+                    delivers high-quality results with exceptional customer service.
+                </p>
+            </div>
+        </div>
+
+        <div id="expert-services" class="bg-slate-50 py-24 px-6">
+            <div class="max-w-7xl mx-auto">
+                <h2
+                    class="text-4xl font-black text-center mb-16 uppercase tracking-widest text-slate-800 underline decoration-blue-600 decoration-8 underline-offset-8">
+                    Expert Handyman Services</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Drywall Repair and Maintenance</h3>
+                        <p class="text-slate-600 text-sm">We repair cracks, holes, and dents in drywall, ensuring your
+                            walls look smooth and flawless.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Interior Stain and Paint</h3>
+                        <p class="text-slate-600 text-sm">Give your interiors a fresh new look with our professional
+                            staining and painting services.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Exterior Stain and Paint</h3>
+                        <p class="text-slate-600 text-sm">Enhance your home’s curb appeal with durable and high-quality
+                            exterior staining and painting.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Floor Improvements and Tiling</h3>
+                        <p class="text-slate-600 text-sm">From repairs to new installations, we improve your floors with
+                            expert tiling and upgrades.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Light Fixture Installation</h3>
+                        <p class="text-slate-600 text-sm">We safely install new light fixtures to brighten and elevate
+                            your spaces.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Furniture Assembly</h3>
+                        <p class="text-slate-600 text-sm">Expert assembly for all types of furniture, including desks,
+                            bookshelves, and bed frames.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white py-24 px-6 border-y border-slate-200">
+            <div class="max-w-7xl mx-auto">
+                <h2
+                    class="text-4xl font-black text-center mb-16 uppercase tracking-widest text-slate-800 underline decoration-blue-600 decoration-8 underline-offset-8">
+                    Professional Handyman Services</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-slate-50 p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Door Hardware Installation</h3>
+                        <p class="text-slate-600 text-sm">Secure and refresh your doors with our professional hardware
+                            installation services.</p>
+                    </div>
+                    <div class="bg-slate-50 p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Picture Hanging and Installation</h3>
+                        <p class="text-slate-600 text-sm">We hang pictures, mirrors, and artwork securely and perfectly
+                            aligned.</p>
+                    </div>
+                    <div class="bg-slate-50 p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Window Coverings</h3>
+                        <p class="text-slate-600 text-sm">Professional installation of blinds, curtains, and shades to
+                            suit your style and needs.</p>
+                    </div>
+                    <div class="bg-slate-50 p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase">Screen Installation and Repair</h3>
+                        <p class="text-slate-600 text-sm">We install or repair window and door screens to keep bugs out
+                            and comfort in.</p>
+                    </div>
+                    <div class="bg-slate-50 p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase tracking-tight">Small Appliance
+                            Installation</h3>
+                        <p class="text-slate-600 text-sm">Quick and reliable installation and repair of small household
+                            appliances.</p>
+                    </div>
+                    <div class="bg-slate-50 p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 text-blue-600 uppercase tracking-tight">Smart Home Upgrades
+                        </h3>
+                        <p class="text-slate-600 text-sm">Modernize your home with smart device installations for
+                            convenience and efficiency.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-50 py-24 px-6">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-4xl font-black mb-12 text-center uppercase tracking-widest text-slate-800">Our Recent
+                    Projects</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <img src="image/1.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/2.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/3.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/4.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/5.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/6.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/7.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/8.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/9.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/10.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/11.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                    <img src="image/12.jpg" onclick="openLightbox(this.src)"
+                        class="cursor-pointer rounded-2xl h-64 w-full object-cover shadow-lg hover:scale-105 transition duration-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-blue-600 py-24 px-6 text-white text-center">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-4xl font-black mb-12 uppercase tracking-widest">Client Testimonials</h2>
+                <div id="testimonials-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Dynamic reviews will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="view-login" class="view" onclick="showView('landing')">
+        <div class="auth-card w-full max-w-md p-8 relative max-h-[90vh] overflow-y-auto"
+            onclick="event.stopPropagation()">
+            <button onclick="showView('landing')"
+                class="absolute top-6 right-6 text-slate-300 hover:text-blue-600 transition text-3xl font-light">&times;</button>
+            <div class="flex border-b border-slate-200 mb-6">
+                <button onclick="toggleAuthMode('signin')" id="tab-signin"
+                    class="flex-1 pb-3 text-sm font-bold uppercase tracking-wider border-b-2 border-blue-600 text-blue-600">Sign
+                    In</button>
+                <button onclick="toggleAuthMode('signup')" id="tab-signup"
+                    class="flex-1 pb-3 text-sm font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400">Sign
+                    Up</button>
+            </div>
+            <form id="form-signin" class="space-y-4">
+                <h2 class="text-2xl font-black text-slate-800 uppercase text-center">Login</h2>
+                <input type="email" id="signin-email" placeholder="Email Address" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 transition">
+                <input type="password" id="signin-password" placeholder="Password" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 transition">
+                <div class="flex items-center">
+                    <input type="checkbox" id="signin-show-pass" onclick="togglePasswordVisibility('signin-password')"
+                        class="mr-2">
+                    <label for="signin-show-pass" class="text-sm text-slate-600">Show Password</label>
+                </div>
+                <button type="submit" id="signin-btn"
+                    class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-blue-700 transition uppercase tracking-widest">Sign
+                    In</button>
+                <div class="text-center mt-4">
+                    <button type="button" onclick="toggleAuthMode('forgot')"
+                        class="text-sm text-blue-600 font-bold hover:underline">Forgot Password?</button>
+                </div>
+            </form>
+            <form id="form-forgot" class="space-y-4 hidden">
+                <h2 class="text-2xl font-black text-slate-800 uppercase text-center">Reset Password</h2>
+                <p class="text-sm text-slate-500 text-center px-4">Enter your email and we'll send you a link to reset
+                    your password.</p>
+                <input type="email" id="forgot-email" placeholder="Email Address" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 transition">
+                <button type="submit" id="forgot-btn"
+                    class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-blue-700 transition uppercase tracking-widest">Send
+                    Reset Link</button>
+                <div class="text-center mt-4">
+                    <button type="button" onclick="toggleAuthMode('signin')"
+                        class="text-sm text-slate-400 font-bold hover:underline">Back to Login</button>
+                </div>
+            </form>
+            <form id="form-signup" class="space-y-4 hidden">
+                <h2 class="text-2xl font-black text-slate-800 uppercase text-center">Create Account</h2>
+                <input type="text" id="signup-name" placeholder="Full Name" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <input type="email" id="signup-email" placeholder="Email Address" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <input type="password" id="signup-password" placeholder="Password" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <input type="text" id="signup-address" placeholder="Address" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <input type="tel" id="signup-mobile" placeholder="Mobile Number" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <input type="number" id="signup-age" placeholder="Age" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <div class="flex items-center">
+                    <input type="checkbox" id="signup-show-pass" onclick="togglePasswordVisibility('signup-password')"
+                        class="mr-2">
+                    <label for="signup-show-pass" class="text-sm text-slate-600">Show Password</label>
+                </div>
+                <button type="submit" id="signup-btn"
+                    class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg uppercase tracking-widest">Register</button>
+            </form>
+            <form id="form-update-password" class="space-y-4 hidden">
+                <h2 class="text-2xl font-black text-slate-800 uppercase text-center">New Password</h2>
+                <p class="text-sm text-slate-500 text-center px-4">Create a new secure password for your account.</p>
+                <input type="password" id="update-password" placeholder="New Password" required
+                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 transition">
+                <button type="submit" id="update-btn"
+                    class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-blue-700 transition uppercase tracking-widest">Update
+                    Password</button>
+            </form>
+        </div>
+    </section>
+
+    <footer class="bg-slate-900 text-slate-400 py-16 text-center">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="w-24 mx-auto mb-6"><img src="image/logo/logo.svg" alt="Logo" class="w-full"></div>
+            <h2 class="text-white text-2xl font-black mb-4 uppercase">Very Handy Home Service Inc.</h2>
+            <p class="mb-4 text-sm">Thank you for visiting VeryHandy Home Services! We are dedicated to providing
+                quality craftsmanship and exceptional customer service.</p>
+            <p class="text-xs tracking-widest uppercase">&copy; 2026 All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://kbiiitwgdiwxwazruwny.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiaWlpdHdnZGl3eHdhenJ1d255Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwOTQ5OTQsImV4cCI6MjA4MzY3MDk5NH0.vbADZlmwDn80RCghnmo2IE1O1R1gEcnnRha7j1V6VUo';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- SIGN IN LOGIC ---
+        document.getElementById('form-signin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('signin-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "AUTHENTICATING...";
+            btn.disabled = true;
+
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+
+            try {
+                // 1. Sign in with Supabase
+                const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({ email, password });
+                if (authError) throw authError;
+
+                // 2. Fetch User Role from Profiles Table
+                const { data: profile, error: dbError } = await _supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', authData.user.id)
+                    .maybeSingle();
+
+                if (dbError) throw dbError;
+
+                const role = profile && profile.role ? String(profile.role).toLowerCase().trim() : 'client';
+                console.log("LOGIN: Role identified as:", role);
+
+                if (role === 'admin') {
+                    window.location.href = 'admin_dashboard.html';
+                } else {
+                    window.location.href = 'client_dashboard.html';
+                }
+
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // --- SIGN UP LOGIC (Updated for Trigger/Metadata) ---
+        document.getElementById('form-signup').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('signup-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "CREATING ACCOUNT...";
+            btn.disabled = true;
+
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const name = document.getElementById('signup-name').value;
+            const address = document.getElementById('signup-address').value;
+            const mobile = document.getElementById('signup-mobile').value;
+            const age = document.getElementById('signup-age').value;
+
+            try {
+                // We send the extra data (address, mobile, etc.) inside 'options.data'.
+                // Your SQL TRIGGER (on the database side) will catch this and create the profile row.
+                const { data, error } = await _supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: name,
+                            address: address,
+                            mobile: mobile,
+                            age: age
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                alert("Registration Successful! Please Sign In.");
+                toggleAuthMode('signin');
+                document.getElementById('form-signup').reset();
+
+            } catch (err) {
+                alert("Registration Failed: " + err.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // --- FORGOT PASSWORD LOGIC ---
+        document.getElementById('form-forgot').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('forgot-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "SENDING...";
+            btn.disabled = true;
+
+            const email = document.getElementById('forgot-email').value;
+
+            try {
+                const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.href // Returns user to current page
+                });
+                if (error) throw error;
+                alert("Password reset link sent to your email!");
+                toggleAuthMode('signin');
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // --- UPDATE PASSWORD LOGIC ---
+        document.getElementById('form-update-password').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('update-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "UPDATING...";
+            btn.disabled = true;
+
+            const newPassword = document.getElementById('update-password').value;
+
+            try {
+                const { error } = await _supabase.auth.updateUser({ password: newPassword });
+                if (error) throw error;
+                alert("Password updated successfully! Please sign in with your new password.");
+                toggleAuthMode('signin');
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // --- UI HELPER FUNCTIONS ---
+        function showView(id) {
+            if (id === 'login') {
+                document.getElementById('view-login').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById('view-' + id).classList.add('active');
+                document.body.style.overflow = 'auto';
+                document.getElementById('view-login').classList.remove('active');
+            }
+        }
+
+        function toggleAuthMode(mode) {
+            const s = document.getElementById('form-signin'), u = document.getElementById('form-signup'), f = document.getElementById('form-forgot'), up = document.getElementById('form-update-password');
+            const st = document.getElementById('tab-signin'), ut = document.getElementById('tab-signup');
+
+            // Hide all forms first
+            s.classList.add('hidden'); u.classList.add('hidden'); f.classList.add('hidden'); up.classList.add('hidden');
+
+            if (mode === 'signup') {
+                u.classList.remove('hidden');
+                ut.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-blue-600 text-blue-600";
+                st.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
+            } else if (mode === 'forgot') {
+                f.classList.remove('hidden');
+                st.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
+                ut.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
+            } else if (mode === 'update') {
+                up.classList.remove('hidden');
+                st.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
+                ut.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
+            } else {
+                s.classList.remove('hidden');
+                st.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-blue-600 text-blue-600";
+                ut.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
+            }
+        }
+
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-modal').classList.add('active');
+        }
+
+        function closeLightbox() { document.getElementById('lightbox-modal').classList.remove('active'); }
+
+        function togglePasswordVisibility(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+        async function fetchPublicReviews() {
+            const { data, error } = await _supabase
+                .from('reviews')
+                .select(`
+                    rating,
+                    comment,
+                    photo_urls,
+                    profiles:client_id (full_name)
+                `)
+                .eq('is_public', true)
+                .limit(3);
+
+            const container = document.getElementById('testimonials-container');
+            if (error || !data || data.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white text-slate-800 p-8 rounded-3xl shadow-xl">
+                        <div class="text-yellow-400 text-2xl mb-2">★★★★★</div>
+                        <p class="italic mb-4 text-sm">"Best in the business! Professional, clean work, and highly knowledgeable."</p>
+                        <p class="font-black text-xs uppercase text-blue-600">— Loyal Customer</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.map(r => `
+                <div class="bg-white text-slate-800 p-8 rounded-3xl shadow-xl flex flex-col">
+                    <div class="text-yellow-400 text-2xl mb-2">
+                        ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+                    </div>
+                    <p class="italic mb-4 text-sm flex-grow">"${r.comment}"</p>
+                    ${r.photo_urls ? `
+                        <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                            ${(function () {
+                        try {
+                            const urls = JSON.parse(r.photo_urls);
+                            return urls.map(url => `
+                                        <img src="${url}" class="w-12 h-12 object-cover rounded-lg border border-slate-100 cursor-pointer" onclick="openLightbox('${url}')" />
+                                    `).join('');
+                        } catch (e) { return ''; }
+                    })()}
+                        </div>
+                    ` : ''}
+                    <p class="font-black text-xs uppercase text-blue-600">— ${r.profiles ? r.profiles.full_name : 'Happy Client'}</p>
+                </div>
+            `).join('');
+        }
+
+        async function checkSession() {
+            // Check if we are in a password recovery flow
+            const hash = window.location.hash;
+            if (hash && hash.includes('type=recovery')) {
+                showView('login');
+                toggleAuthMode('update');
+                return;
+            }
+
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                const { data: profile } = await _supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+                if (profile) {
+                    const role = String(profile.role).toLowerCase().trim();
+                    window.location.href = role === 'admin' ? 'admin_dashboard.html' : 'client_dashboard.html';
+                }
+            }
+        }
+
+        checkSession();
+        fetchPublicReviews();
+    </script>
+</body>
+
+</html>
