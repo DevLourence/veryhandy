@@ -7,7 +7,17 @@
     <title>Very Handy Home Service Inc. | Reliable Handyman Services</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
     <style>
+        .iti {
+            width: 100%;
+        }
+
+        .iti__flag-container {
+            border-radius: 12px 0 0 12px;
+        }
+
         .view {
             display: none;
         }
@@ -304,13 +314,25 @@
             </form>
             <form id="form-forgot" class="space-y-4 hidden">
                 <h2 class="text-2xl font-black text-slate-800 uppercase text-center">Reset Password</h2>
-                <p class="text-sm text-slate-500 text-center px-4">Enter your email and we'll send you a link to reset
-                    your password.</p>
-                <input type="email" id="forgot-email" placeholder="Email Address" required
-                    class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 transition">
-                <button type="submit" id="forgot-btn"
-                    class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-blue-700 transition uppercase tracking-widest">Send
-                    Reset Link</button>
+                <div id="forgot-step-1" class="space-y-4">
+                    <p class="text-sm text-slate-500 text-center px-4">Enter your email and we'll send you a recovery
+                        code.</p>
+                    <input type="email" id="forgot-email" placeholder="Email Address" required
+                        class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 transition">
+                    <button type="submit" id="forgot-btn"
+                        class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-blue-700 transition uppercase tracking-widest">Send
+                        Code</button>
+                </div>
+                <div id="forgot-step-2" class="space-y-4 hidden">
+                    <p class="text-sm text-slate-500 text-center px-4">Enter the 6-digit code sent to your email.</p>
+                    <input type="text" id="forgot-code" placeholder="Enter 6-Digit Code" maxlength="6"
+                        class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 text-center text-2xl font-black tracking-[0.5em]">
+                    <button type="button" id="otp-verify-btn" onclick="verifyResetOtp()"
+                        class="w-full bg-green-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-green-700 transition uppercase tracking-widest">Verify
+                        Code</button>
+                    <button type="button" onclick="resetForgotForm()"
+                        class="w-full text-xs text-slate-400 font-bold uppercase hover:underline">Change Email</button>
+                </div>
                 <div class="text-center mt-4">
                     <button type="button" onclick="toggleAuthMode('signin')"
                         class="text-sm text-slate-400 font-bold hover:underline">Back to Login</button>
@@ -326,7 +348,7 @@
                     class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
                 <input type="text" id="signup-address" placeholder="Address" required
                     class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                <input type="tel" id="signup-mobile" placeholder="Mobile Number" required
+                <input type="tel" id="signup-mobile" required
                     class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
                 <input type="number" id="signup-age" placeholder="Age" required
                     class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
@@ -364,6 +386,14 @@
         const SUPABASE_URL = 'https://kbiiitwgdiwxwazruwny.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiaWlpdHdnZGl3eHdhenJ1d255Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwOTQ5OTQsImV4cCI6MjA4MzY3MDk5NH0.vbADZlmwDn80RCghnmo2IE1O1R1gEcnnRha7j1V6VUo';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Initialize intlTelInput
+        const mobileInput = document.querySelector("#signup-mobile");
+        const iti = window.intlTelInput(mobileInput, {
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            preferredCountries: ["ph", "us", "gb"],
+            separateDialCode: true
+        });
 
         // --- SIGN IN LOGIC ---
         document.getElementById('form-signin').addEventListener('submit', async (e) => {
@@ -420,8 +450,16 @@
             const password = document.getElementById('signup-password').value;
             const name = document.getElementById('signup-name').value;
             const address = document.getElementById('signup-address').value;
-            const mobile = document.getElementById('signup-mobile').value;
             const age = document.getElementById('signup-age').value;
+
+            // Validate Mobile
+            if (!iti.isValidNumber()) {
+                alert("Please enter a valid mobile number with the correct length.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+                return;
+            }
+            const mobile = iti.getNumber();
 
             try {
                 // We send the extra data (address, mobile, etc.) inside 'options.data'.
@@ -453,6 +491,8 @@
             }
         });
 
+        let pendingResetEmail = '';
+
         // --- FORGOT PASSWORD LOGIC ---
         document.getElementById('form-forgot').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -461,22 +501,69 @@
             btn.innerText = "SENDING...";
             btn.disabled = true;
 
-            const email = document.getElementById('forgot-email').value;
+            const emailInput = document.getElementById('forgot-email').value.trim().toLowerCase();
+            pendingResetEmail = emailInput;
 
             try {
-                const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.href // Returns user to current page
+                const { error } = await _supabase.auth.resetPasswordForEmail(pendingResetEmail, {
+                    redirectTo: window.location.origin + window.location.pathname
                 });
                 if (error) throw error;
-                alert("Password reset link sent to your email!");
-                toggleAuthMode('signin');
+
+                alert("A fresh recovery code has been sent to: " + pendingResetEmail);
+                document.getElementById('forgot-step-1').classList.add('hidden');
+                document.getElementById('forgot-step-2').classList.remove('hidden');
             } catch (err) {
-                alert(err.message);
+                alert("Error sending code: " + err.message);
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
         });
+
+        async function verifyResetOtp() {
+            const token = document.getElementById('forgot-code').value.trim();
+            const btn = document.getElementById('otp-verify-btn');
+
+            if (!pendingResetEmail) {
+                alert("Session lost. Please enter your email again.");
+                resetForgotForm();
+                return;
+            }
+
+            if (token.length < 6) {
+                alert("Please enter the full 6-digit code.");
+                return;
+            }
+
+            btn.innerText = "VERIFYING...";
+            btn.disabled = true;
+
+            try {
+                const { data, error } = await _supabase.auth.verifyOtp({
+                    email: pendingResetEmail,
+                    token: token,
+                    type: 'recovery'
+                });
+
+                if (error) throw error;
+
+                alert("Success! Code verified for " + pendingResetEmail);
+                toggleAuthMode('update');
+            } catch (err) {
+                alert("Verification failed: " + err.message + "\n\nTip: Use the LATEST code from your inbox.");
+                document.getElementById('forgot-code').value = '';
+            } finally {
+                btn.innerText = "Verify Code";
+                btn.disabled = false;
+            }
+        }
+
+        function resetForgotForm() {
+            document.getElementById('forgot-step-2').classList.add('hidden');
+            document.getElementById('forgot-step-1').classList.remove('hidden');
+            document.getElementById('forgot-code').value = '';
+        }
 
         // --- UPDATE PASSWORD LOGIC ---
         document.getElementById('form-update-password').addEventListener('submit', async (e) => {
@@ -506,6 +593,7 @@
             if (id === 'login') {
                 document.getElementById('view-login').classList.add('active');
                 document.body.style.overflow = 'hidden';
+                resetForgotForm(); // Ensure forgot password form is reset to step 1
             } else {
                 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
                 document.getElementById('view-' + id).classList.add('active');
@@ -527,6 +615,7 @@
                 st.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
             } else if (mode === 'forgot') {
                 f.classList.remove('hidden');
+                resetForgotForm(); // Always start at Step 1 (Email entry)
                 st.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
                 ut.className = "flex-1 pb-3 text-sm font-bold uppercase border-b-2 border-transparent text-slate-400";
             } else if (mode === 'update') {
