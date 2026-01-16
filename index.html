@@ -501,12 +501,12 @@
             btn.innerText = "SENDING...";
             btn.disabled = true;
 
-            const emailInput = document.getElementById('forgot-email').value.trim().toLowerCase();
+            const emailInput = document.getElementById('forgot-email').value.trim();
             pendingResetEmail = emailInput;
 
             try {
                 const { error } = await _supabase.auth.resetPasswordForEmail(pendingResetEmail, {
-                    redirectTo: window.location.origin + window.location.pathname
+                    redirectTo: 'https://veryhandy.vercel.app/reset_password.html'
                 });
                 if (error) throw error;
 
@@ -551,7 +551,7 @@
                 alert("Success! Code verified for " + pendingResetEmail);
                 toggleAuthMode('update');
             } catch (err) {
-                alert("Verification failed: " + err.message + "\n\nTip: Use the LATEST code from your inbox.");
+                alert("Verification failed for [" + pendingResetEmail + "]: " + err.message + "\n\nTip: Make sure this email matches your account exactly!");
                 document.getElementById('forgot-code').value = '';
             } finally {
                 btn.innerText = "Verify Code";
@@ -578,10 +578,10 @@
             try {
                 const { error } = await _supabase.auth.updateUser({ password: newPassword });
                 if (error) throw error;
-                alert("Password updated successfully! Please sign in with your new password.");
+                alert("Success! Your password is updated. You can now sign in.");
                 toggleAuthMode('signin');
             } catch (err) {
-                alert(err.message);
+                alert("Update failed: " + err.message);
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
