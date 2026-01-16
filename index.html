@@ -505,9 +505,7 @@
             pendingResetEmail = emailInput;
 
             try {
-                const { error } = await _supabase.auth.resetPasswordForEmail(pendingResetEmail, {
-                    redirectTo: 'https://veryhandy.vercel.app/reset_password.html'
-                });
+                const { error } = await _supabase.auth.resetPasswordForEmail(pendingResetEmail);
                 if (error) throw error;
 
                 alert("A fresh recovery code has been sent to: " + pendingResetEmail);
