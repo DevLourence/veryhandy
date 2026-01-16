@@ -202,6 +202,9 @@
 
         async function fetchClients() {
             const { data } = await _supabase.from('profiles').select('*');
+            const { data: { session } } = await _supabase.auth.getSession();
+            const currentUserId = session?.user?.id;
+
             const tbody = document.getElementById('client-table-body');
             tbody.innerHTML = data.map(u => `
                 <tr>
@@ -211,9 +214,41 @@
                     <td class="p-4 text-slate-600">${u.age || '-'}</td>
                     <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-black ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'} uppercase">${u.role}</span></td>
                     <td class="p-4 text-xs font-mono text-slate-400">${u.id.substring(0, 8)}...</td>
-                    <td class="p-4"><button class="text-blue-600 font-bold text-xs hover:underline">Edit</button></td>
+                    <td class="p-4 flex gap-2">
+                        ${u.id !== currentUserId ? `
+                            <button onclick="deleteClient('${u.id}', '${u.full_name || 'this user'}')" class="text-red-600 font-bold text-xs hover:underline">Delete</button>
+                        ` : '<span class="text-slate-300 text-xs italic">You</span>'}
+                    </td>
                 </tr>
             `).join('');
+        }
+
+        async function deleteClient(userId, userName) {
+            const confirm1 = confirm(`⚠️ PERMANENTLY DELETE "${userName}"?\n\nThis will:\n• Remove their profile from the database\n• Delete all their bookings and reviews\n• Revoke their account access\n\nThis action CANNOT be undone!`);
+
+            if (!confirm1) return;
+
+            const confirm2 = prompt(`Type "DELETE" to confirm removal of ${userName}:`);
+            if (confirm2 !== "DELETE") {
+                alert("Deletion cancelled.");
+                return;
+            }
+
+            try {
+                // Delete from profiles table (this should cascade to bookings/reviews if FK constraints are set)
+                const { error: profileError } = await _supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', userId);
+
+                if (profileError) throw profileError;
+
+                alert(`✅ Client "${userName}" has been deleted from the database.\n\n⚠️ Note: Their authentication account still exists in Supabase Auth. To fully remove it, use the Supabase Dashboard → Authentication → Users.`);
+                fetchClients();
+            } catch (err) {
+                alert(`❌ Error deleting client: ${err.message}`);
+                console.error(err);
+            }
         }
 
         async function fetchBookings() {
@@ -285,6 +320,24 @@
                 alert("Error updating status: " + error.message);
                 console.error(error);
             } else {
+                // Send email notification to client
+                try {
+                    const { data, error: emailError } = await _supabase.functions.invoke('send-booking-notification', {
+                        body: { bookingId: id, newStatus: newStatus }
+                    });
+
+                    if (emailError) {
+                        console.warn('Email notification failed:', emailError);
+                        alert(`✅ Status updated to "${newStatus}"\n\n⚠️ Email notification could not be sent. Please notify the client manually.`);
+                    } else {
+                        console.log('Email notification sent:', data);
+                        alert(`✅ Status updated to "${newStatus}"\n📧 Client has been notified via email!`);
+                    }
+                } catch (emailErr) {
+                    console.warn('Email notification error:', emailErr);
+                    alert(`✅ Status updated to "${newStatus}"\n\n⚠️ Email service unavailable. Client was not notified.`);
+                }
+
                 fetchBookings();
             }
         }
